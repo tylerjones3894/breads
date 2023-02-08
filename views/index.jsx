@@ -1,10 +1,23 @@
 const React = require('react')
+const baker = require('../controllers/bakers_controller')
 const Default = require('./layouts/Default')
 
 function Index ({breads, title}) {
     return (
       <Default title={title}>
         <h2>Index Page</h2>
+        <h3>Bakers</h3>
+        <ul>
+            {
+                bakers.map((baker), => {
+                    return (
+                        <li key={baker._id}>
+                            <a href={`/bakers/${baker._id}`}>{baker.name}</a>
+                        </li>
+                    )
+                })
+            }
+        </ul>
         <div className="newButton">
             <a href="/breads/new"><button>Add a new bread</button></a>
         </div>
@@ -13,10 +26,11 @@ function Index ({breads, title}) {
             {
                 breads.map((bread, index)=> {
                     return (
-                    <li key={index}>
-                        <a href={`/breads/${bread.id}`}>
+                    <li key={bread.id}>
+                        <a href={`/breads/${bread._id}`}>
                             {bread.name}
                         </a>
+                        <div>{bread.getBakedBy()}</div>
                     </li>
                     )
                 })       

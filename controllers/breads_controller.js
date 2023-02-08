@@ -2,17 +2,34 @@ const express = require('express')
 const breads = express.Router()
 // const seed = require('../seed')
 const Bread = require('../models/bread.js')
+const Baker = require('../models/bakers.js')
+const baker = require('./bakers_controller.js')
 
-// INDEX
-breads.get('/', (req, res) => {
-    Bread.find({}, [], {sort: {name: 1}})
-        .then(foundBreads => {
-            res.render('index', {
-                breads: foundBreads,
-                title: 'Index Page'
-            })
-        })
-})
+// Index
+breads.get('/', async (req, res) => {
+    const foundBakers = await Baker.find()
+    const foundBreads = await Bread.find().populate('baker').limit(2)
+    res.render('index', {
+      breads: foundBreads,
+      bakers: foundBakers,
+      title: 'Index Page'
+    })
+  })
+  
+// breads.get('/', (req, res) => {
+//     Baker.find()
+//       .then(foundBakers => {
+//         Bread.find()
+//         .then(foundBreads => {
+//             res.render('index', {
+//                 breads: foundBreads,
+//                 bakers: foundBakers,
+//                 title: 'Index Page'
+//             })
+//         })
+//       })
+//   })
+  
 
 // CREATE
 breads.post('/', (req, res) => {
@@ -31,32 +48,43 @@ breads.post('/', (req, res) => {
 
 // NEW
 breads.get('/new', (req, res) => {
-    res.render('new')
+    Baker.find()
+    .then(foundBakers => {
+        console.log(foundBakers)
+        res.render('new', {
+            bakers: foundBakers
+        })
+    })
 })
 
 // EDIT
 breads.get('/:id/edit', (req, res) => {
-    Bread.findById(req.params.id) 
-      .then(foundBread => { 
-        res.render('edit', {
-          bread: foundBread 
-        })
+    Baker.find()
+      .then(foundBakers => {
+          Bread.findById(req.params.id)
+            .then(foundBread => {
+              res.render('edit', {
+                  bread: foundBread, 
+                  bakers: foundBakers 
+              })
+            })
       })
   })
-  
 
 // SHOW
 breads.get('/:id', (req, res) => {
     Bread.findById(req.params.id)
+        .populate('baker')
         .then(foundBread => {
-            res.render('show', {
-                bread: foundBread
-            })
+          res.render('show', {
+              bread: foundBread
+          })
         })
         .catch(err => {
-            res.send('404')
+          res.send('404')
         })
-})
+  })
+  
 
   // DELETE
   breads.delete('/:id', (req, res) => {
@@ -77,8 +105,9 @@ breads.put('/:id', (req, res) => {
     Bread.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true})
         .then(updateBread => {
             res.redirect(`/breads/${req.params.id}`)
-        }).catch(error => {
-            res.render('Generic Error', {error})
+        })
+        .catch(error => {
+            res.render('genericError', {error})
         })
   }) 
   
